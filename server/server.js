@@ -79,7 +79,7 @@ class Track {
       const isFighter = ['J-10', 'F-16', 'JF-17', 'Mirage V'].includes(this.type);
       if (isFighter) {
         // Dynamic Border Calculation (Angled from SW to NE)
-        const borderThreshold = 68.0 + (this.lat - 23.0) * 0.54; 
+        const borderThreshold = 67.0 + (this.lat - 23.0) * 0.6; 
         if (this.lon > borderThreshold && dLon > 0) {
            this.target = { 
               lat: this.lat + (Math.random()*2 - 1), 
@@ -95,7 +95,7 @@ class Track {
       // Hit detection (simplified)
       if (distance < 0.05) { 
         if (isFighter) {
-          const tacticalBorder = 68.0 + (this.lat - 23.0) * 0.54;
+          const tacticalBorder = 67.0 + (this.lat - 23.0) * 0.6;
           if (this.lon < tacticalBorder) {
              // Reached patrol waypoint, pick a new one
              this.target = { 
@@ -182,12 +182,16 @@ function launchDirectThreat(baseId, type) {
   const packageId = `TRK-${Date.now()}`;
   
   // Calculate dynamic border for the target base roughly
-  const targetBorderLon = 68.0 + (targetBase.lat - 23.0) * 0.54;
+  const targetBorderLon = 67.0 + (targetBase.lat - 23.0) * 0.6;
   
   let track;
   if (type === 'FIGHTER') {
-    const fighters = ['J-10', 'F-16', 'JF-17', 'Mirage V'];
-    const fType = fighters[Math.floor(Math.random() * fighters.length)];
+    const rand = Math.random();
+    let fType = 'JF-17'; 
+    if (rand < 0.05) fType = 'Mirage V';
+    else if (rand < 0.25) fType = 'J-10';
+    else if (rand < 0.60) fType = 'F-16';
+    else fType = 'JF-17';
     const lat = targetBase.lat + (Math.random() * 2 - 1);
     const lon = targetBorderLon - (Math.random() * 1.5 + 0.5);
     track = new Track(`${packageId}-F`, fType, lat, lon, 900 + (Math.random()*400), 10000, targetBase);
