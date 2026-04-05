@@ -1,0 +1,18 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "Tactical Sector Boundary" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [68.16, 23.63],
+          [71.00, 26.50],
+          [73.50, 30.00],
+          [75.00, 35.00]
+        ]
+      }
+    }
+  ]
+}

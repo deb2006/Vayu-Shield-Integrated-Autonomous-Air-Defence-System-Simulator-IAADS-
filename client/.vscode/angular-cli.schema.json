@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Angular CLI workspace schema (simplified)",
+  "type": "object",
+  "properties": {
+    "version": { "type": "number" },
+    "newProjectRoot": { "type": "string" },
+    "cli": { "type": "object" },
+    "projects": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "projectType": { "type": "string" },
+          "root": { "type": "string" },
+          "sourceRoot": { "type": "string" },
+          "prefix": { "type": "string" },
+          "architect": { "type": "object" }
+        }
+      }
+    }
+  },
+  "required": ["version", "projects"]
+}
