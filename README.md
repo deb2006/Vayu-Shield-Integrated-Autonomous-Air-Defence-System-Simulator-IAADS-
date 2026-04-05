@@ -8,6 +8,8 @@ VayuShield is a real-time, highly interactive tactical coordination and integrat
 * **Orchestration Engine (Node.js):** Runs an independent physics interval to calculate velocities, geographical paths, impacts, and intercept countdown timers on the fly.
 * **Targeting AI Service (FastAPI):** Ingests incoming tracks and queries active regional defense arrays (S-400s, Akash, Rafales, Su-30MKI, Tejas). Selects the ideal interceptor using a strict targeting matrix tailored to counter specific threats (e.g., L-70 guns and EW Jammers uniquely mapped to drone swarms).
 * **Live Action Kill Board:** Monitors high-velocity WebSocket events and maintains a robust client-side Map tracker to record interception metrics by specific vehicle type (e.g. Fatah, JF-17, CM-400) without relying on persistent database storage.
+* **Decentralized SHORAD (SHort Range Air Defence):** Every airbase (Bhuj, Jaisalmer, Pathankot, and Srinagar) is equipped with a localized **EW Swarm Jammer** and **L-70 Gun** point-defense array. The AI strictly enforces engagement envelopes (18km for EW, 8km for L-70) to simulate realistic terminal defense doctrine. 
+* **High-Speed Physics Engine:** Projectile velocities are calibrated to real-world Mach profiles, with the **CM-400AKG** cruise missile traversing at **Mach 4.7+** (~5800 km/h) and the **Fatah** at **Mach 1.0** (~1235 km/h). 
 
 ## 🧠 Advanced Autonomous Logic Modules
 

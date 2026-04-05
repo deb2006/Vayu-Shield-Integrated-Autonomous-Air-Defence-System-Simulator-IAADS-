@@ -29,10 +29,10 @@ const BORDER_POINTS = [
 ];
 
 const airbases = [
-  { id: 'bhuj', name: 'Bhuj Airbase', lat: 23.2875, lon: 69.6701, role: 'Western Entry', defenders: ['S-400', 'Tejas', 'L-70 Gun', 'Akash'] },
-  { id: 'jaisalmer', name: 'Jaisalmer Airbase', lat: 26.8890, lon: 70.8647, role: 'Desert Sector', defenders: ['Akash', 'MR-SAM', 'Rafale'] },
-  { id: 'pathankot', name: 'Pathankot Airbase', lat: 32.2331, lon: 75.6347, role: 'Northern Strike', defenders: ['S-400', 'Su-30MKI', 'Akash'] },
-  { id: 'srinagar', name: 'Srinagar Airbase', lat: 33.9870, lon: 74.7741, role: 'High-altitude', defenders: ['Akash', 'MiG-29UPG', 'L-70 Gun'] }
+  { id: 'bhuj', name: 'Bhuj Airbase', lat: 23.2875, lon: 69.6701, role: 'Western Entry', defenders: ['S-400', 'Tejas', 'L-70 Gun', 'Akash', 'EW Swarm Jammer'] },
+  { id: 'jaisalmer', name: 'Jaisalmer Airbase', lat: 26.8890, lon: 70.8647, role: 'Desert Sector', defenders: ['Akash', 'MR-SAM', 'Rafale', 'EW Swarm Jammer'] },
+  { id: 'pathankot', name: 'Pathankot Airbase', lat: 32.2331, lon: 75.6347, role: 'Northern Strike', defenders: ['S-400', 'Su-30MKI', 'Akash', 'EW Swarm Jammer'] },
+  { id: 'srinagar', name: 'Srinagar Airbase', lat: 33.9870, lon: 74.7741, role: 'High-altitude', defenders: ['Akash', 'MiG-29UPG', 'L-70 Gun', 'EW Swarm Jammer'] }
 ];
 
 let activeTracks = [];
@@ -50,7 +50,6 @@ class Track {
     this.target = target;
     this.status = 'Detected';
     this.assignment = null;
-    this.releaseEvent = false;
     this.interceptCountdown = -1;
   }
 
@@ -65,7 +64,7 @@ class Track {
       this.interceptCountdown--;
       if (this.interceptCountdown <= 0) {
         this.status = 'Intercepted';
-        return; // Stopped moving
+        return; 
       }
     }
     
@@ -129,7 +128,11 @@ async function autoAssignDefenders(track) {
       { id: 'AKASH-JSR', type: 'Akash', lat: 26.9, lon: 70.8 },
       { id: 'AKASH-SXR', type: 'Akash', lat: 34.0, lon: 74.8 },
       { id: 'L70-JSR', type: 'L-70 Gun', lat: 26.8, lon: 70.8 },
-      { id: 'EW-SWARM-1', type: 'EW Swarm Jammer', lat: 24.5, lon: 68.5 }
+      { id: 'L70-SXR', type: 'L-70 Gun', lat: 33.98, lon: 74.77 },
+      { id: 'EW-BHUJ', type: 'EW Swarm Jammer', lat: 23.28, lon: 69.67 },
+      { id: 'EW-JSR', type: 'EW Swarm Jammer', lat: 26.88, lon: 70.86 },
+      { id: 'EW-PKT', type: 'EW Swarm Jammer', lat: 32.23, lon: 75.63 },
+      { id: 'EW-SXR', type: 'EW Swarm Jammer', lat: 33.98, lon: 74.77 }
     ];
 
     const response = await axios.post(`${AI_SERVICE_URL}/optimal-assignment`, {
@@ -147,7 +150,21 @@ async function autoAssignDefenders(track) {
     if (response.data.assigned_defender) {
       track.assignment = response.data.assigned_defender;
       track.status = 'Engaged';
-      track.interceptCountdown = 8; // 8 simulation ticks until the interceptor missile reaches it
+      
+      // Calculate Dynamic Time to Impact
+      const def = response.data.assigned_defender;
+      const isAircraft = ['Rafale', 'Su-30MKI', 'Tejas', 'MiG-29UPG'].includes(def.type);
+      const velKmH = isAircraft ? 2200 : 4800; // SAMs are much faster than jets
+      
+      const distDegrees = Math.sqrt(Math.pow(def.lat - track.lat, 2) + Math.pow(def.lon - track.lon, 2));
+      const distKm = distDegrees * 111; 
+      
+      // Simulation at 60x scale: 1 tick = 60 simulation seconds
+      // Ticks = Distance(km) / (Velocity(km/h) / 60)
+      track.interceptCountdown = Math.ceil(distKm / (velKmH / 60));
+      
+      // Safety cap: minimum 3 seconds, max 20 seconds for UI realism
+      track.interceptCountdown = Math.max(3, Math.min(track.interceptCountdown, 20));
       io.emit('event_log', { 
         timestamp: new Date().toLocaleTimeString(),
         message: `[AUTO-ENGAGE] ${response.data.assigned_defender.type} launched against ${track.type} (ID: ${track.id})`
@@ -188,12 +205,12 @@ function launchDirectThreat(baseId, type) {
          if (distance < minDistance) { minDistance = distance; closestBase = b; }
       });
 
-      track = new Track(`${packageId}-M`, 'CM-400', jf17.lat, jf17.lon, 1800, 15000, closestBase);
+      track = new Track(`${packageId}-M`, 'CM-400', jf17.lat, jf17.lon, 5800, 15000, closestBase);
     } else {
       // Standard Surface-To-Surface Fatah launch
       const lat = targetBase.lat + (Math.random() * 3 - 1.5);
       const lon = targetBorderLon - (Math.random() * 2.5 + 1.0);
-      track = new Track(`${packageId}-M`, 'Fatah', lat, lon, 1800, 15000, targetBase);
+      track = new Track(`${packageId}-M`, 'Fatah', lat, lon, 1235, 15000, targetBase);
     }
   } else {
     // Drons Swarm relative spawn

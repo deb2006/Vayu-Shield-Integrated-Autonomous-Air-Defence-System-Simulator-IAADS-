@@ -26,7 +26,7 @@ TARGETING_MATRIX = {
     "Missile": ["S-400", "Akash", "MR-SAM"],
     "CM-400": ["S-400", "Akash", "MR-SAM"],
     "Fatah": ["S-400", "Akash", "MR-SAM"],
-    "Drone Swarm": ["L-70 Gun", "EW Swarm Jammer"]
+    "Drone Swarm": ["EW Swarm Jammer", "L-70 Gun"]
 }
 
 def haversine(lat1, lon1, lat2, lon2):
@@ -88,25 +88,44 @@ async def get_optimal_assignment(track: Track, defenders: List[dict]):
     
     allowed_systems = TARGETING_MATRIX.get(track.type, ["S-400"])
     
-    candidates = [d for d in defenders if d['type'] in allowed_systems]
+    # Filter candidates by type and enforce point-defense range constraints
+    candidates = []
+    for d in defenders:
+        if d['type'] not in allowed_systems:
+            continue
+            
+        dist = haversine(track.latitude, track.longitude, d['lat'], d['lon'])
+        
+        # L-70 Gun point-defense constraint: 8km
+        if d['type'] == "L-70 Gun" and dist > 8.0:
+            continue
+            
+        # EW Swarm Jammer range constraint: 18km
+        if d['type'] == "EW Swarm Jammer" and dist > 18.0:
+            continue
+            
+        candidates.append({"data": d, "dist": dist})
     
     if not candidates:
-        return {"track_id": track.id, "assignment": None, "reason": "No compatible defenders found"}
+        return {"track_id": track.id, "assigned_defender": None, "reason": "No defenders in range or compatible"}
     
-    # Proximity-based optimal selection
-    best_defender = None
-    min_dist = float('inf')
-    
-    for d in candidates:
-        dist = haversine(track.latitude, track.longitude, d['lat'], d['lon'])
-        if dist < min_dist:
-            min_dist = dist
-            best_defender = d
+    # Prioritization logic:
+    # 1. Type Priority (based on index in TARGETING_MATRIX)
+    # 2. Distance
+    def get_priority(cand):
+        sys_type = cand['data']['type']
+        try:
+            return allowed_systems.index(sys_type)
+        except ValueError:
+            return 99
+            
+    candidates.sort(key=lambda x: (get_priority(x), x['dist']))
+    best = candidates[0]
             
     return {
         "track_id": track.id,
-        "assigned_defender": best_defender,
-        "distance": round(min_dist, 2),
+        "assigned_defender": best['data'],
+        "distance": round(best['dist'], 2),
         "mode": "Full-Auto"
     }
 
