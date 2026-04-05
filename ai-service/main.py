@@ -25,7 +25,7 @@ TARGETING_MATRIX = {
     "Fighter": ["S-400", "Su-30MKI", "Rafale", "Tejas", "MiG-29UPG"],
     "Missile": ["S-400", "Akash", "MR-SAM"],
     "CM-400": ["S-400", "Akash", "MR-SAM"],
-    "Fatah": ["S-400", "Akash", "MR-SAM"],
+    "Fatah": ["Akash", "MR-SAM", "S-400"],
     "Drone Swarm": ["EW Swarm Jammer", "L-70 Gun"]
 }
 

@@ -197,15 +197,7 @@ function launchDirectThreat(baseId, type) {
       // CM-400 Air-Launched from an active JF-17
       const jf17 = activeJF17s[Math.floor(Math.random() * activeJF17s.length)];
       
-      // Calculate closest airbase to JF-17's sector
-      let closestBase = targetBase;
-      let minDistance = Infinity;
-      airbases.forEach(b => {
-         const distance = Math.sqrt(Math.pow(b.lat - jf17.lat, 2) + Math.pow(b.lon - jf17.lon, 2));
-         if (distance < minDistance) { minDistance = distance; closestBase = b; }
-      });
-
-      track = new Track(`${packageId}-M`, 'CM-400', jf17.lat, jf17.lon, 5800, 15000, closestBase);
+      track = new Track(`${packageId}-M`, 'CM-400', jf17.lat, jf17.lon, 5800, 15000, jf17.target);
     } else {
       // Standard Surface-To-Surface Fatah launch
       const lat = targetBase.lat + (Math.random() * 3 - 1.5);
@@ -223,7 +215,7 @@ function launchDirectThreat(baseId, type) {
 
   io.emit('event_log', { 
     timestamp: new Date().toLocaleTimeString(),
-    message: `[ALERT] Standalone ${track.type} detected targeting ${targetBase.name}`
+    message: `[ALERT] Standalone ${track.type} detected targeting ${track.target.name}`
   });
 }
 
