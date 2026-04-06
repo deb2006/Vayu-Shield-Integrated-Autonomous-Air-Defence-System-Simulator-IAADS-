@@ -1,35 +1,59 @@
 # VayuShield: Integrated Autonomous Air Defence System (IAADS) Simulator
 
-VayuShield is a real-time, highly interactive tactical coordination and integrated defense simulation. It renders multi-domain threats across a scalable geographic engine and autonomously mitigates them using a sophisticated Python AI back-end to test and deploy interception doctrines without manual oversight.
+VayuShield is a high-fidelity, real-time tactical command and air defense simulation. It orchestrates multi-domain threats across a scalable geospatial engine and autonomously neutralizes them using a sophisticated Python-based AI Core. Designed for doctrinal testing, it supports complex interception matrices, tiered defensive layers, and comprehensive mission debriefing.
 
-## 🚀 Key Features
+## 🌟 New Feature: Tactical Mission Debrief
+The latest update introduces a **Command-Level Performance Reporting Suite**. Commanders can now access a real-time "Mission Debrief" overlay that provides:
+*   **Total Kills & Neutralization Rate**: Cumulative stats for all threat types.
+*   **Interceptor Effectiveness**: Deep-dive analytics on which system (S-400, MR-SAM, Akash, or Scrambled Jets) is performing best in the current tactical cycle.
+*   **Base Integrity Scoring**: Dynamic health tracking of regional airbases (Bhuj, Jaisalmer, etc.) based on successful impacts.
+*   **Mission Clock**: Precise tracking of tactical deployment duration.
 
-* **Real-time Tactical Map:** Angular-based tactical feed layered on Leaflet, providing a live, 60x-scaled physical overlay of active airspace.
-* **Orchestration Engine (Node.js):** Runs an independent physics interval to calculate velocities, geographical paths, impacts, and intercept countdown timers on the fly.
-* **Targeting AI Service (FastAPI):** Ingests incoming tracks and queries active regional defense arrays (S-400s, Akash, Rafales, Su-30MKI, Tejas). Selects the ideal interceptor using a strict targeting matrix tailored to counter specific threats (e.g., L-70 guns and EW Jammers uniquely mapped to drone swarms).
-* **Live Action Kill Board:** Monitors high-velocity WebSocket events and maintains a robust client-side Map tracker to record interception metrics by specific vehicle type (e.g. Fatah, JF-17, CM-400) without relying on persistent database storage.
-* **Decentralized SHORAD (SHort Range Air Defence):** Every airbase (Bhuj, Jaisalmer, Pathankot, and Srinagar) is equipped with a localized **EW Swarm Jammer** and **L-70 Gun** point-defense array. The AI strictly enforces engagement envelopes (18km for EW, 8km for L-70) to simulate realistic terminal defense doctrine. 
-* **High-Speed Physics Engine:** Projectile velocities are calibrated to real-world Mach profiles, with the **CM-400AKG** cruise missile traversing at **Mach 4.7+** (~5800 km/h) and the **Fatah** at **Mach 1.0** (~1235 km/h). 
+## 🚀 Core Capabilities
 
-## 🧠 Advanced Autonomous Logic Modules
+*   **Integrated Defense Doctrine (Tiered AI)**: 
+    *   **Fatah Defense**: Strictly prioritizes Akash (1.0) and MR-SAM (1.5) batteries, reserving S-400 (10.0) as a last-resort heavyweight fallback.
+    *   **Aircraft Interception**: Prioritizes S-400 for standoff kills, with regional Interceptor Jets (Rafale, Su-30MKI, etc.) serving as a global scramble fallback if SAM arrays are depleted.
+*   **Sortie & Refuel Management**: Interceptor aircraft now manage mission counts (2 sorties) before entering a mandatory 3-5 minute refueling/rearming cycle.
+*   **Global Fallback Scramble**: Defending aircraft are no longer bound by regional range constraints, allowing them to scramble to any sector in the theater to provide a universal "catch-all" defense layer.
+*   **Real-time Tactical Map**: Angular-based visualizer with active track telemetry, intercept countdowns, and toggleable defense envelopes.
+*   **High-Speed Ballistic Physics**: Calibrated to real-world Mach profiles, with the **Fatah** ballistic missile and **JF-17** strike packages operating at hyper-accurate velocities.
 
-1. **Strategic Boundary Awareness (Dynamic Slant Calculation):**
-Instead of simple box boundaries, hostile fighters use a dynamic geographical calculation (`68.0 + (lat - 23.0) * 0.54`) mapped to the real-world slant of the Indo-Pakistani border. Fighters deployed at different latitudes accurately recognize airspace thresholds, halting incursions and adopting random flight waypoints to patrol just outside the border limits, simulating an active standoff screen.
+## 🧠 Autonomous Logic Modules
 
-2. **Decentralized Spawning:** 
-Targets autonomously scatter across the entirety of the tactical theater (from Bhuj in the south, up to Srinagar). Spawning architectures dynamically orient themselves directly across the mathematical border line relative to their targeted air base, ensuring realistic intercept geometries.
+1.  **Targeting Matrix (main.py)**: A weighted scoring engine that evaluates distance, threat type, and doctrine priority to ensure ammunition is used optimally.
+2.  **Orchestration Engine (server.js)**: Handles the physics interval, collision detection, and battery state management (READY vs RELOADING).
+3.  **Strategic Boundary Awareness**: Hostile fighters maintain a random standoff patrol pattern along the dynamic slant of the western border, simulating active airspace surveillance.
 
-3. **Standoff Weapons Simulation (CM-400 / JF-17 link):**
-Missile deployments dynamically scan airspace for active `JF-17` hostile tracks. If a fighter is present, the module evaluates the closest potential regional asset and natively spawns a high-speed `CM-400` from the exact coordinate envelope of the fighter—mirroring true air-launched cruise missile mechanics. If no platform is active, the engine defaults to geographically remote surface-launched ballistic tracks (`Fatah`).
+## 🛠️ Technology Stack
+*   **Frontend:** Angular 17.x, Leaflet.js, Vanilla CSS
+*   **Back-end Orchestrator:** Node.js, Express, Socket.io
+*   **Tactical AI Core:** Python 3.x, FastAPI, Uvicorn
 
-## 🛠️ Stack
-* **Frontend:** Angular 17.x, Leaflet, HTML/CSS
-* **Orchestrator:** Node.js, Express, Socket.io
-* **AI Evaluation Engine:** Python, FastAPI, Uvicorn
+## 🚦 Deployment & Execution
 
-## 🚦 How to Run
-1. Start the Orchestrator: `cd server && node server.js`
-2. Start the AI Logic Engine: `cd ai-service && uvicorn main:app --host 0.0.0.0 --port 8000`
-3. Launch UI: `cd client && ng serve`
+> [!IMPORTANT]
+> Ensure all three services are running concurrently for the simulation to function correctly.
 
-Navigate to `http://localhost:4200` to dive into the theater command panel.
+### 1. AI Logic Engine
+```bash
+cd ai-service
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload --root-path /ai-service
+```
+
+### 2. Orchestration Server
+```bash
+cd server
+node server.js
+```
+
+### 3. Tactical Dashboard
+```bash
+cd client
+npm start -- --port 4201
+```
+
+Access the command panel at: **[http://localhost:4201/](http://localhost:4201/)**
+
+---
+*Developed for VayuShield Integrated Autonomous Air Defence System - v1.0.5*
