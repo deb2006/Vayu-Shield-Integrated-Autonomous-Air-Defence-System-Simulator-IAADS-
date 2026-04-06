@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { io, Socket } from 'socket.io-client';
 
 @Injectable()
 export class ApiService {
   private socket: Socket;
   private backendUrl = 'http://localhost:3000';
+  private showRangesSubject = new BehaviorSubject<boolean>(false);
+  public showRanges$ = this.showRangesSubject.asObservable();
 
   constructor(private http: HttpClient) {
     try {
@@ -29,6 +31,14 @@ export class ApiService {
     return this.http.post(`${this.backendUrl}/launch-package`, { baseId, type });
   }
 
+  getTacticalStats(): Observable<any> {
+    return this.http.get(`${this.backendUrl}/stats`);
+  }
+
+  resetStats(): Observable<any> {
+    return this.http.post(`${this.backendUrl}/stats/reset`, {});
+  }
+
   onTrackUpdate(): Observable<any> {
     return new Observable(observer => {
       this.socket.on('track_update', (data) => observer.next(data));
@@ -48,5 +58,15 @@ export class ApiService {
       // Initial status
       observer.next(this.socket.connected);
     });
+  }
+
+  onBatteryUpdate(): Observable<any> {
+    return new Observable(observer => {
+      this.socket.on('battery_update', (data) => observer.next(data));
+    });
+  }
+
+  toggleRanges(): void {
+    this.showRangesSubject.next(!this.showRangesSubject.value);
   }
 }
